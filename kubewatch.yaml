@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kubewatch
+  namespace: default
+spec:
+  serviceAccountName: kubewatch
+  containers:
+  - image: robustadev/kubewatch:v2.7.0
+    imagePullPolicy: Always
+    name: kubewatch
+    envFrom:
+      - configMapRef:
+          name: kubewatch
+    volumeMounts:
+    - name: config-volume
+      mountPath: /opt/bitnami/kubewatch/.kubewatch.yaml
+      subPath: .kubewatch.yaml
+  - image: rancher/kubectl:v1.20.2
+    args:
+      - proxy
+      - "-p"
+      - "8080"
+    name: proxy
+    imagePullPolicy: Always
+  restartPolicy: Always
+  volumes:
+  - name: config-volume
+    configMap:
+      name: kubewatch
+      defaultMode: 0755
+
